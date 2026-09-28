@@ -1,0 +1,151 @@
+<UserControl x:Class="CloudHermesDashboard.Views.PermissionsPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:CloudHermesDashboard.Models">
+    <StackPanel>
+        <Border Height="1" Margin="0,8,0,16" Background="{StaticResource LineBrush}"/>
+        <TextBlock Style="{StaticResource CaptionText}" Text="PERMISSIONS"/>
+        <TextBlock FontWeight="SemiBold"
+                   Foreground="{Binding ModeBrush}"
+                   Text="{Binding ModeBadge}"
+                   TextWrapping="Wrap"/>
+        <TextBlock Margin="0,6,0,0"
+                   Foreground="{StaticResource MutedBrush}"
+                   Text="Политика роли для будущих спавнов. Уже запущенный агент не меняется."
+                   TextWrapping="Wrap"/>
+        <TextBlock Margin="0,8,0,0" Foreground="{StaticResource AccentBrush}" Text="Применение…">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsApplying}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <ItemsControl Margin="0,12,0,0" ItemsSource="{Binding Roles}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Margin="0,0,6,6"
+                            Command="{Binding DataContext.SelectRoleCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                            CommandParameter="{Binding}"
+                            Content="{Binding Label}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource QuietButton}">
+                                <Setter Property="Margin" Value="0,0,6,6"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding Toolsets}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <CheckBox Margin="0,0,0,6"
+                              Content="{Binding Key}"
+                              Foreground="{StaticResource TextBrush}"
+                              IsChecked="{Binding IsEnabled, Mode=TwoWay}"
+                              IsEnabled="{Binding IsEditable}"
+                              ToolTip="{Binding LockReason}"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Border Margin="0,4,0,0"
+                Padding="8,4"
+                HorizontalAlignment="Left"
+                Background="#2A2416"
+                CornerRadius="4">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ProposalPending}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <TextBlock Foreground="#E3B341" Text="предложено агенту"/>
+        </Border>
+
+        <TextBlock Margin="0,8,0,0"
+                   Foreground="{Binding ApplyStatusBrush}"
+                   Text="{Binding ApplyStatus}"
+                   TextWrapping="Wrap"/>
+
+        <TextBlock Margin="0,18,0,0" Style="{StaticResource CaptionText}" Text="SERVER SETTINGS"/>
+        <TextBlock Foreground="{StaticResource MutedBrush}"
+                   Text="{Binding ServerKnownSummary}"
+                   TextWrapping="Wrap"/>
+        <TextBlock Margin="0,6,0,8"
+                   Foreground="#F0883E"
+                   Text="depth = 3 и высокий concurrency кратно увеличивают стоимость."
+                   TextWrapping="Wrap"/>
+
+        <CheckBox Margin="0,0,0,8"
+                  Content="delegation.orchestrator_enabled"
+                  Foreground="{StaticResource TextBrush}"
+                  IsChecked="{Binding OrchestratorEnabled}"
+                  IsThreeState="True"/>
+        <DockPanel Margin="0,0,0,8">
+            <TextBlock Width="168" VerticalAlignment="Center" Text="max_spawn_depth"/>
+            <TextBox Style="{StaticResource DarkTextBox}" Text="{Binding MaxSpawnDepth, UpdateSourceTrigger=PropertyChanged}"/>
+        </DockPanel>
+        <DockPanel Margin="0,0,0,8">
+            <TextBlock Width="168" VerticalAlignment="Center" Text="max_concurrent_children"/>
+            <TextBox Style="{StaticResource DarkTextBox}" Text="{Binding MaxConcurrentChildren, UpdateSourceTrigger=PropertyChanged}"/>
+        </DockPanel>
+        <Button HorizontalAlignment="Left"
+                Command="{Binding ApplyServerCommand}"
+                Content="Применить"
+                Style="{StaticResource QuietButton}"/>
+
+        <StackPanel Margin="0,16,0,0">
+            <StackPanel.Style>
+                <Style TargetType="StackPanel">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Mode}" Value="{x:Static models:CapabilityMode.Manual}">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <TextBlock Style="{StaticResource CaptionText}" Text="РУЧНАЯ ВСТАВКА"/>
+            <TextBlock Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap">
+                <Run Text="Вставьте сниппет в"/>
+                <Run Text="{Binding ConfigPathText, Mode=OneWay}"/>
+                <Run Text=". Может понадобиться рестарт сервиса. Уже запущенные агенты не изменятся."/>
+            </TextBlock>
+            <TextBox Height="180"
+                     Margin="0,8,0,8"
+                     AcceptsReturn="True"
+                     FontFamily="Consolas"
+                     IsReadOnly="True"
+                     Style="{StaticResource DarkTextBox}"
+                     Text="{Binding ManualSnippet, Mode=OneWay}"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"/>
+            <Button HorizontalAlignment="Left"
+                    Command="{Binding CopySnippetCommand}"
+                    Content="Copy"
+                    Style="{StaticResource QuietButton}"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>
